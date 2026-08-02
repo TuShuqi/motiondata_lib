@@ -102,8 +102,18 @@ def apply_default_viewer_scene(spec: mujoco.MjSpec) -> None:
 
 
 def load_model(robot_profile: RobotProfile, model_path: Path | None = None) -> mujoco.MjModel:
-    urdf_path = robot_profile.model_path if model_path is None else model_path.resolve()
-    runtime_urdf = prepare_runtime_urdf(urdf_path, robot_profile.root_body)
+    resolved_model_path = (
+        robot_profile.model_path if model_path is None else model_path.resolve()
+    )
+    if resolved_model_path.suffix.lower() == ".xml":
+        return mujoco.MjModel.from_xml_path(str(resolved_model_path))
+    if resolved_model_path.suffix.lower() != ".urdf":
+        raise ValueError(
+            f"Unsupported robot model '{resolved_model_path}'. "
+            "Expected a URDF or MJCF XML file."
+        )
+
+    runtime_urdf = prepare_runtime_urdf(resolved_model_path, robot_profile.root_body)
     try:
         spec = mujoco.MjSpec.from_file(str(runtime_urdf))
         apply_default_viewer_scene(spec)

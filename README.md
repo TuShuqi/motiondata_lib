@@ -10,6 +10,7 @@
 - Filter the motion list by filename from the right-side panel
 - Auto-detect supported dataset formats when a directory contains only one format
 - Preview clips on a MuJoCo robot model with mouse camera control
+- Toggle MuJoCo contact-point visualization during playback
 - Play, pause, scrub frames, adjust playback speed, and optionally follow the root body
 - Trim the current clip with timeline markers and export the selected span as `.npz`
 - Batch-export checked clips to the project's standardized `.npz` layout
@@ -58,8 +59,8 @@ Command-line options:
 
 - `dataset`: directory containing motion files of a single supported format
 - `--robot`: robot profile name loaded from `robots/*.toml`
-- `--model`: temporary URDF override for the selected robot profile
-- `--format`: force one of `auto`, `retargeted_npz`, `sonic`, `lafan1`, `amass`
+- `--model`: temporary URDF or MuJoCo MJCF XML override for the selected robot profile
+- `--format`: force one of `auto`, `retargeted_npz`, `sonic`, `tiangong3_csv`, `lafan1`, `amass`
 
 ## Supported Robots
 
@@ -74,12 +75,14 @@ Robot profiles live in `robots/*.toml`. A profile defines:
 Currently included:
 
 - `unitree_g1` -> `robots/unitree_g1.toml`
+- `tiangong3` -> `robots/tiangong3.toml`
 
-The corresponding URDF and meshes are stored under `robots/resources/unitree_g1/`.
+The Unitree G1 URDF and meshes are stored under `robots/resources/unitree_g1/`.
+Robot profiles may also point to a MuJoCo MJCF XML model.
 
 ## Supported Dataset Formats
 
-The browser currently supports four input formats. Internally, all of them are converted to the same `MotionClip` representation and can be exported as standardized `.npz`.
+The browser currently supports five input formats. Internally, all of them are converted to the same `MotionClip` representation and can be exported as standardized `.npz`.
 
 ### 1. `retargeted_npz`
 
@@ -125,7 +128,21 @@ Expected numeric layout per frame:
 
 Default frame rate is `30`.
 
-### 4. `amass`
+### 4. `tiangong3_csv`
+
+File suffix: `.csv`
+
+Expected numeric layout per frame:
+
+- columns `0:3`: root position
+- columns `3:7`: root quaternion in `xyzw`
+- remaining 31 columns: Tiangong 3 joint positions in CSVEditor order
+
+The importer maps columns by joint name, so fixed joints omitted by the selected
+robot profile (such as the newer URDF's head joints) are ignored. Default frame
+rate is `120`.
+
+### 5. `amass`
 
 File suffix: `.npy`
 
@@ -139,6 +156,35 @@ Importer behavior:
 
 - frame rate is inferred from the last integer in the filename
 - base `z` is shifted upward by `0.75`
+
+## Convert Retargeted PKL to Tiangong CSV
+
+Use the repository converter for trusted PKL files containing `fps`, `root_pos`,
+`root_rot`, and `dof_pos`:
+
+```bash
+uv run python tools/pkl_to_csv.py \
+  /path/to/input.pkl \
+  --output /path/to/output.csv \
+  --robot tiangong3
+```
+
+The converter validates array shapes and finite values, normalizes root
+quaternions, automatically resamples to the Tiangong CSV playback rate of 120
+Hz, and writes root quaternions as `xyzw`. If the PKL includes `joint_names`,
+the joint columns are reordered to the robot profile. Otherwise, the converter
+requires the DOF count to match and assumes profile order.
+
+Optional motion adjustments:
+
+```bash
+uv run python tools/pkl_to_csv.py input.pkl -o output.csv \
+  --robot tiangong3 --recenter --ground-align --z-offset 0.01
+```
+
+Existing outputs are not replaced unless `--overwrite` is passed. Because
+Python pickle files can execute code while loading, only convert trusted PKL
+files.
 
 ## Development
 
@@ -158,7 +204,7 @@ There is no committed `pytest` suite yet, so the main validation flow is current
 ### Add a New Robot
 
 1. Add a new TOML profile under `robots/<name>.toml`
-2. Put the URDF and assets under `robots/resources/<name>/`
+2. Put the URDF or MJCF XML and assets under `robots/resources/<name>/`
 3. Fill in `model`, `root_body`, and `joint_names`
 4. Launch with:
 

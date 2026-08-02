@@ -1,0 +1,37 @@
+name = "tiangong3"
+display_name = "Tiangong 3"
+model = "resources/tiangong3/urdf/tiangong3.xml"
+root_body = "pelvis"
+joint_names = [
+    "hip_pitch_l_joint",
+    "hip_roll_l_joint",
+    "hip_yaw_l_joint",
+    "knee_pitch_l_joint",
+    "ankle_pitch_l_joint",
+    "ankle_roll_l_joint",
+    "hip_pitch_r_joint",
+    "hip_roll_r_joint",
+    "hip_yaw_r_joint",
+    "knee_pitch_r_joint",
+    "ankle_pitch_r_joint",
+    "ankle_roll_r_joint",
+    "waist_yaw_joint",
+    "waist_roll_joint",
+    "waist_pitch_joint",
+    "head_yaw_joint",
+    "head_pitch_joint",
+    "shoulder_pitch_l_joint",
+    "shoulder_roll_l_joint",
+    "shoulder_yaw_l_joint",
+    "elbow_pitch_l_joint",
+    "elbow_yaw_l_joint",
+    "wrist_pitch_l_joint",
+    "wrist_roll_l_joint",
+    "shoulder_pitch_r_joint",
+    "shoulder_roll_r_joint",
+    "shoulder_yaw_r_joint",
+    "elbow_pitch_r_joint",
+    "elbow_yaw_r_joint",
+    "wrist_pitch_r_joint",
+    "wrist_roll_r_joint",
+]

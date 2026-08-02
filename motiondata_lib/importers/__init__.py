@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from motiondata_lib.importers import amass, lafan1, retargeted_npz, sonic
+from motiondata_lib.importers import amass, lafan1, retargeted_npz, sonic, tiangong3_csv
 from motiondata_lib.importers.common import motion_files_under_dir
 from motiondata_lib.types import MotionClip, MotionClipRef
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from motiondata_lib.robot_profiles import RobotProfile
 
 
-IMPORTERS = (retargeted_npz, sonic, lafan1, amass)
+IMPORTERS = (retargeted_npz, sonic, tiangong3_csv, lafan1, amass)
 IMPORTER_BY_NAME = {importer.FORMAT_NAME: importer for importer in IMPORTERS}
 SUPPORTED_DATASET_FORMATS = tuple(importer.FORMAT_NAME for importer in IMPORTERS)
 

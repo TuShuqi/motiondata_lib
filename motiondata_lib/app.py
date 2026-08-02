@@ -36,7 +36,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--model",
         type=Path,
-        help="Optional URDF override. Defaults to the model path defined by the selected robot profile.",
+        help=(
+            "Optional URDF or MJCF XML override. Defaults to the model path defined "
+            "by the selected robot profile."
+        ),
     )
     parser.add_argument(
         "--format",

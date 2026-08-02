@@ -9,6 +9,10 @@ from motiondata_lib.robot_profiles import RobotProfile
 from motiondata_lib.viewer_defaults import DEFAULT_CAMERA_PRESET
 
 
+COLLISION_GEOM_GROUP = 0
+WORLD_GEOM_GROUP = 2
+
+
 class MujocoViewer(QOpenGLWidget):
     def __init__(self, model: mujoco.MjModel, robot_profile: RobotProfile, parent=None) -> None:
         super().__init__(parent)
@@ -16,6 +20,16 @@ class MujocoViewer(QOpenGLWidget):
         self.robot_profile = robot_profile
         self.data = mujoco.MjData(model)
         self.current_qpos = np.array(model.qpos0, copy=True)
+
+        world_geoms = np.flatnonzero(
+            (model.geom_bodyid == 0) & (model.geom_group == COLLISION_GEOM_GROUP)
+        )
+        model.geom_group[world_geoms] = WORLD_GEOM_GROUP
+        collision_geom_ids = np.flatnonzero(
+            (model.geom_bodyid != 0)
+            & ((model.geom_contype != 0) | (model.geom_conaffinity != 0))
+        )
+        self.has_collision_geoms = bool(len(collision_geom_ids))
 
         root_body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, robot_profile.root_body)
         self.root_body_id = root_body_id if root_body_id != -1 else None
@@ -25,6 +39,7 @@ class MujocoViewer(QOpenGLWidget):
         self.option = mujoco.MjvOption()
         mujoco.mjv_defaultFreeCamera(model, self.camera)
         mujoco.mjv_defaultOption(self.option)
+        self.option.geomgroup[COLLISION_GEOM_GROUP] = False
         self.camera.distance = DEFAULT_CAMERA_PRESET.distance
         self.camera.azimuth = DEFAULT_CAMERA_PRESET.azimuth
         self.camera.elevation = DEFAULT_CAMERA_PRESET.elevation
@@ -76,6 +91,11 @@ class MujocoViewer(QOpenGLWidget):
     def set_follow_root(self, enabled: bool) -> None:
         self.follow_root = enabled
         self._sync_data()
+        self.update()
+
+    def set_contact_points_visible(self, enabled: bool) -> None:
+        flag = int(mujoco.mjtVisFlag.mjVIS_CONTACTPOINT)
+        self.option.flags[flag] = enabled
         self.update()
 
     def mousePressEvent(self, event) -> None:  # type: ignore[override]

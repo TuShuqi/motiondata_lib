@@ -81,6 +81,7 @@ class MotionBrowserWindow(QMainWindow):
         self.trim_button = QPushButton("Trim current")
         self.select_all_checkbox = QCheckBox("Select all")
         self.follow_root_checkbox = QCheckBox("Follow root")
+        self.contact_points_checkbox = QCheckBox("Contact points")
         self.speed_spin = QDoubleSpinBox()
         self.frame_slider = TrimSlider()
 
@@ -134,6 +135,8 @@ class MotionBrowserWindow(QMainWindow):
                 f"Body '{self.robot_profile.root_body}' was not found in the loaded model"
             )
 
+        self.contact_points_checkbox.setEnabled(self.viewer.has_collision_geoms)
+
         right_panel = QWidget()
         right_panel.setObjectName("rightPanel")
         right_panel.setFixedWidth(RIGHT_PANEL_WIDTH)
@@ -169,6 +172,11 @@ class MotionBrowserWindow(QMainWindow):
         action_row.addWidget(self.trim_button)
         action_row.addWidget(self.export_button)
 
+        view_row = QHBoxLayout()
+        view_row.setSpacing(10)
+        view_row.addWidget(self.contact_points_checkbox)
+        view_row.addStretch(1)
+
         self.dataset_title_label.setObjectName("panelTitle")
         self.dataset_meta_label.setObjectName("panelMeta")
         self.clip_count_label.setObjectName("statLabel")
@@ -187,6 +195,9 @@ class MotionBrowserWindow(QMainWindow):
         right_layout.addWidget(self.filter_field)
         right_layout.addLayout(library_stats_row)
         right_layout.addWidget(self.list_widget, stretch=1)
+        right_layout.addWidget(self._divider())
+        right_layout.addWidget(self._section_label("View"))
+        right_layout.addLayout(view_row)
         right_layout.addWidget(self._divider())
         right_layout.addWidget(self._section_label("Timeline"))
         right_layout.addLayout(controls_row)
@@ -213,6 +224,9 @@ class MotionBrowserWindow(QMainWindow):
         self.export_button.clicked.connect(self._export_checked_clips)
         self.trim_button.clicked.connect(self._trim_current_clip)
         self.follow_root_checkbox.toggled.connect(self.viewer.set_follow_root)
+        self.contact_points_checkbox.toggled.connect(
+            self.viewer.set_contact_points_visible
+        )
         self.speed_spin.valueChanged.connect(self._reset_tick_clock)
         self.frame_slider.sliderPressed.connect(self._on_slider_interaction_started)
         self.frame_slider.sliderReleased.connect(self._on_slider_interaction_finished)
