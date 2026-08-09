@@ -8,7 +8,7 @@ from motiondata_lib.transforms import normalize_quaternions
 from motiondata_lib.types import MotionClip, MotionClipRef
 
 
-SUPPORTED_MOTION_SUFFIXES = {".npz", ".csv", ".npy"}
+SUPPORTED_MOTION_SUFFIXES = {".npz", ".csv", ".npy", ".pkl"}
 
 
 def motion_files_under_dir(dataset_dir: Path) -> list[Path]:

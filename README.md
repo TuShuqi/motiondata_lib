@@ -60,7 +60,7 @@ Command-line options:
 - `dataset`: directory containing motion files of a single supported format
 - `--robot`: robot profile name loaded from `robots/*.toml`
 - `--model`: temporary URDF or MuJoCo MJCF XML override for the selected robot profile
-- `--format`: force one of `auto`, `retargeted_npz`, `sonic`, `tiangong3_csv`, `lafan1`, `amass`
+- `--format`: force one of `auto`, `retargeted_npz`, `sonic`, `tiangong3_csv`, `tiangong3_pkl`, `lafan1`, `amass`
 
 ## Supported Robots
 
@@ -82,7 +82,7 @@ Robot profiles may also point to a MuJoCo MJCF XML model.
 
 ## Supported Dataset Formats
 
-The browser currently supports five input formats. Internally, all of them are converted to the same `MotionClip` representation and can be exported as standardized `.npz`.
+The browser currently supports six input formats. Internally, all of them are converted to the same `MotionClip` representation and can be exported as standardized `.npz`.
 
 ### 1. `retargeted_npz`
 
@@ -142,7 +142,23 @@ The importer maps columns by joint name, so fixed joints omitted by the selected
 robot profile (such as the newer URDF's head joints) are ignored. Default frame
 rate is `120`.
 
-### 5. `amass`
+### 5. `tiangong3_pkl`
+
+File suffix: `.pkl`
+
+Expected dict keys:
+
+- `fps`
+- `root_pos` with shape `(N, 3)`
+- `root_rot` with shape `(N, 4)` in `xyzw`
+- `dof_pos` with shape `(N, J)`
+
+Optional `joint_names` reorders `dof_pos` to the selected robot profile. Without
+it, `J` must already match the profile joint count and profile order is assumed.
+Frame rate comes from `fps`. Only load trusted pickle files; pickle can execute
+code while deserializing.
+
+### 6. `amass`
 
 File suffix: `.npy`
 
